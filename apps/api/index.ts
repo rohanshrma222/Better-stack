@@ -8,7 +8,8 @@ app.post("/website",async(req,res) =>{
     const website = await prismaClient.website.create({
         data:{
             url: req.body.url,
-            timeAdded: new Date()
+            timeAdded: new Date(),
+            user_id: req.body.user_id
         }
     })
     
