@@ -2,16 +2,22 @@ import express from "express";
 import { prismaClient } from "store/client"
 import { AuthInput } from "./types";
 import  jwt  from "jsonwebtoken";
+import { authMiddleware } from "./middleware";
+
 
 const app = express();
 app.use(express.json());
 
-app.post("/website",async(req,res) =>{
+app.post("/website",authMiddleware,async(req,res) =>{
+    if(!req.body.url){
+        res.status(411).json({});
+        return
+    }
     const website = await prismaClient.website.create({
         data:{
             url: req.body.url,
-            timeAdded: new Date(),
-            user_id: req.body.user_id
+            time_added: new Date(),
+            user_id: req.userId!
         }
     })
     
@@ -20,12 +26,36 @@ app.post("/website",async(req,res) =>{
     })
 });
 
-app.get("/status/:websiteId",(req,res)=>{
+app.get("/status/:websiteId",authMiddleware,async(req,res)=>{
+       const website =await prismaClient.website.findFirst({
+        where: {
+            user_id: req.userId!,
+            id: req.params.websiteId,
+        },
+        include: {
+            ticks: {
+                orderBy: [{
+                    createdAt: 'desc',
+                }],
+                take: 1
+            }
+        }
+    })
 
+    if(!website){
+        res.status(409).json({
+            message: "Not Found"
+        })
+        return;
+    }
+
+    res.json({
+        website
+    })
 })
 
 app.post("/user/signup",async(req,res)=>{
-    const data = AuthInput.safeParse(req.body.data);
+    const data = AuthInput.safeParse(req.body);
     if(!data.success){
         res.status(403).send("");
         return;
@@ -46,7 +76,7 @@ app.post("/user/signup",async(req,res)=>{
 })
 
 app.post("/user/signin",async(req,res)=>{
-    const data = AuthInput.safeParse(req.body.data);
+    const data = AuthInput.safeParse(req.body);
     if(!data.success){
         res.status(403).send("");
         return;
@@ -72,6 +102,6 @@ app.post("/user/signin",async(req,res)=>{
 
 })
 
-app.listen(process.env.PORT || 3000,()=>{
-    console.log("Server is running on port 3000");
+app.listen(process.env.PORT || 3001,()=>{
+    console.log("Server is running on port 3001");
 })
