@@ -74,6 +74,9 @@
     },
     "apps/worker": {
       "name": "worker",
+      "dependencies": {
+        "redisstream": "*",
+      },
       "devDependencies": {
         "@types/bun": "latest",
       },

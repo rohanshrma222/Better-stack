@@ -2,6 +2,9 @@
   "name": "worker",
   "module": "index.ts",
   "type": "module",
+  "dependencies": {
+    "redisstream": "*"
+  },
   "private": true,
   "devDependencies": {
     "@types/bun": "latest"
