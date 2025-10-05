@@ -39,7 +39,7 @@ app.get("/status/:websiteId", authMiddleware, async (req, res) => {
             createdAt: "desc",
           },
         ],
-        take: 1,
+        take: 10,
       },
     },
   });
@@ -125,6 +125,17 @@ app.post("/user/signin", async (req, res) => {
     jwt: token,
   });
 });
+
+app.get("/websites", authMiddleware, async(req,res) => {
+      const websites = await prismaClient.website.findMany({
+        where: {
+          user_id: req.userId
+        }
+      })
+      res.json({
+        websites
+      })
+})
 
 app.listen(process.env.PORT || 3001, () => {
   console.log("Server is running on port 3001");
